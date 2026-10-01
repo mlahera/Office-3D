@@ -170,7 +170,7 @@ h1 { margin: 0; font: 700 26px/1 var(--f-display); letter-spacing: .01em; text-w
 
   const FLOOR = {
     carpet: 0x969fa2, office: 0xc9c2b6, conf: 0xb7ae9f, vinyl: 0xdcd5c6,
-    tile: 0xe6e8e9, recep: 0xcdbfa6, util: 0xb4b9bb, mat: 0x6c7375
+    tile: 0xb7c3c8, recep: 0xcdbfa6, util: 0xb4b9bb, mat: 0x6c7375
   };
 
   const ROOMS = [
@@ -428,6 +428,11 @@ h1 { margin: 0; font: 700 26px/1 var(--f-display); letter-spacing: .01em; text-w
     }
     WALLS.forEach(w => addWall(w[0], w[1], w[2], w[3], w[4]));
     addArcWall();
+    // building columns on the north window wall, ~22' on center
+    [1, 17.67, 40.7, 62.58].forEach(x => {
+      placeBox(wallGroup, x - 0.8, 0.8, 0, 0, 1.6, 0, wallH, 1.6, mat(0xdcdad4));
+      placeBox(wallGroup, x - 0.8, 0.8, 0, 0, 1.6, wallH, wallH + 0.06, 1.62, CAP);
+    });
     [[49, 'E'], [63, 'W'], [69, 'E'], [79, 'W']].forEach(([x, o]) => {
       cubicle(x, 24.7, o);
       cubicle(x, 30.7, o);
@@ -571,11 +576,23 @@ h1 { margin: 0; font: 700 26px/1 var(--f-display); letter-spacing: .01em; text-w
   plant(13.3, 34.9, 0.8);
   // Coats
   box(5.4, 0.12, 1.4, C.white, -4.9, 5.4, 49.6);
-  // ADA restroom
-  box(1.7, 1.5, 2.3, C.fixture, 21.4, 0, 44.6);
-  box(0.8, 2.6, 2.1, C.fixture, 22, 0, 44.6);
-  box(1.8, 0.5, 2.2, C.fixture, 21.6, 2.4, 39.6);
-  box(0.1, 3, 2, 0xc9d7de, 22.25, 4, 39.6);
+  // ADA restroom: toilet on the east wall with grab bars, wall-hung lavatory and mirror in the northeast corner
+  const PORC = 0xffffff, STEEL = 0xb9c0c4;
+  const wc = group(21.2, 44.4, -Math.PI / 2);          // faces west, tank against the east wall
+  box(1.9, 1.3, 0.7, PORC, 0, 1.45, -0.85, 0, wc);      // tank
+  box(1.95, 0.12, 0.75, PORC, 0, 2.75, -0.85, 0, wc);   // tank lid
+  const bowl = new THREE.Mesh(new THREE.CylinderGeometry(0.75, 0.55, 1.35, 24), mat(PORC));
+  bowl.scale.set(1, 1, 1.35); bowl.position.set(0, 0.68, 0.35); bowl.castShadow = true; wc.add(bowl);
+  const seat = new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.11, 10, 28), mat(0x9aa3a8));
+  seat.rotation.x = Math.PI / 2; seat.scale.set(1, 1.35, 1); seat.position.set(0, 1.42, 0.35); wc.add(seat);
+  box(0.12, 0.12, 3.5, STEEL, 22.15, 2.8, 44.4);         // rear grab bar
+  box(3.5, 0.12, 0.12, STEEL, 20.2, 2.8, 45.65);         // side grab bar
+  box(2.0, 0.55, 1.7, PORC, 21.5, 2.35, 39.4);           // wall-hung lavatory
+  box(1.4, 0.2, 1.0, 0xc4ccd0, 21.4, 2.75, 39.4);         // basin
+  cyl(0.06, 0.06, 0.6, STEEL, 22.1, 2.9, 39.4, furn, 8);  // faucet
+  box(0.08, 3, 1.8, 0xb7d2de, 22.25, 3.9, 39.4);          // mirror
+  box(0.4, 1.1, 1, STEEL, 22.1, 3.6, 41.5);              // paper towels
+  box(0.6, 0.12, 2.0, 0x3a4246, 19.4, 0, 39.3);          // floor drain / mat
   // Storage
   [47, 49.2, 51.4].forEach(z => box(1.5, 6.5, 2, C.metal, 21.5, 0, z));
   // Conference: racetrack table for twelve
@@ -692,7 +709,7 @@ h1 { margin: 0; font: 700 26px/1 var(--f-display); letter-spacing: .01em; text-w
     const detail = document.getElementById('detail');
     if (!id) { detail.hidden = true; return; }
     const room = roomById[id];
-    room.mesh.material.emissive.copy(accentColor).multiplyScalar(0.35);
+    room.mesh.material.emissive.copy(accentColor).multiplyScalar(0.2);
     room.label.classList.add('sel');
     room.listBtn.setAttribute('aria-pressed', 'true');
     detail.hidden = false;
@@ -756,7 +773,7 @@ h1 { margin: 0; font: 700 26px/1 var(--f-display); letter-spacing: .01em; text-w
     scene.fog = new THREE.Fog(bg, 260, 700);
     ground.material.color.set(cs.getPropertyValue('--ground').trim() || '#d3d9d5');
     accentColor.set(cs.getPropertyValue('--accent').trim() || '#2847ad');
-    if (selected) roomById[selected].mesh.material.emissive.copy(accentColor).multiplyScalar(0.35);
+    if (selected) roomById[selected].mesh.material.emissive.copy(accentColor).multiplyScalar(0.2);
   }
   applyTheme();
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
